@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplicación de Matrices</title>
+</head>
+<body>
+    <h1>Multiplicación de Matrices</h1>
+    <form id="matrixForm">
+        <label for="rows">Número de filas:</label>
+        <input type="number" id="rows" name="rows">
+        <label for="cols">Número de columnas:</label>
+        <input type="number" id="cols" name="cols">
+        <button type="button" onclick="crearMatrices()">Crear Matrices</button>
+        <div id="matrixInputs"></div>
+        <button type="button" onclick="sendMatrices()">Multiplicar Matrices</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function crearMatrices() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+
+            let matrixInputsHTML = '';
+            for (let i = 0; i < 2; i++) {
+                matrixInputsHTML += `<h2>Matriz ${i + 1}</h2>`;
+                matrixInputsHTML += '<table>';
+                for (let row = 0; row < rows; row++) {
+                    matrixInputsHTML += '<tr>';
+                    for (let col = 0; col < cols; col++) {
+                        matrixInputsHTML += `<td><input type="number" name="matrix${i + 1}row${row}col${col}" placeholder="Fila ${row + 1}, Columna ${col + 1}"></td>`;
+                    }
+                    matrixInputsHTML += '</tr>';
+                }
+                matrixInputsHTML += '</table>';
+            }
+
+            document.getElementById('matrixInputs').innerHTML = matrixInputsHTML;
+        }
+
+        function sendMatrices() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+
+            const matrices = [[], []];
+
+            for (let i = 0; i < 2; i++) {
+                matrices[i] = [];
+                for (let row = 0; row < rows; row++) {
+                    matrices[i][row] = [];
+                    for (let col = 0; col < cols; col++) {
+                        const value = parseFloat(document.querySelector(`input[name="matrix${i + 1}row${row}col${col}"]`).value);
+                        if (isNaN(value)) {
+                            alert(`Por favor, ingrese un valor numérico para la fila ${row + 1}, columna ${col + 1} de la Matriz ${i + 1}`);
+                            return;
+                        }
+                        matrices[i][row][col] = value;
+                    }
+                }
+            }
+
+            fetch('/multiplicar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ matrices })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('result').innerText = `Resultado de la multiplicación de matrices: ${JSON.stringify(data.result)}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
